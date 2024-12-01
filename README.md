@@ -12,7 +12,7 @@ This repo contains sample code for a simple chat webapp that integrates with Azu
   - Azure SQL Server (private preview)
   - Mongo DB (preview)
 
-## Configure the app
+## Configure the app 
 
 ### Create a .env file for local development
 
