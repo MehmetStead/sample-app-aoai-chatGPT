@@ -1,0 +1,37 @@
+<div class="chat-container">
+  <div class="messages-container">
+    @for (message of messages; track message.id) {
+      <div class="chat-message" [class.chat-message-user]="message.role === 'user'">
+        @if (message.role === 'user') {
+          <div class="chat-message-user-message">{{ message.content }}</div>
+        } @else {
+          <app-answer 
+            [answer]="message" 
+            (citationClicked)="onCitationClick($event)">
+          </app-answer>
+        }
+      </div>
+    }
+  </div>
+
+  <div class="chat-input-container">
+    <app-question-input
+      [disabled]="isLoading"
+      (sendMessage)="onSendMessage($event)"
+      placeholder="Type your message...">
+    </app-question-input>
+  </div>
+
+  @if (isCitationPanelOpen && activeCitation) {
+    <div class="citation-panel">
+      <div class="citation-panel-header">
+        <span>Citations</span>
+        <button mat-icon-button (click)="isCitationPanelOpen = false">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <h5 class="citation-panel-title">{{ activeCitation.title }}</h5>
+      <div class="citation-panel-content" [innerHTML]="activeCitation.content"></div>
+    </div>
+  }
+</div> 

@@ -1,0 +1,44 @@
+.layout-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+mat-toolbar {
+  min-height: 64px;
+  padding: 0 16px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.headerContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.headerIcon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.headerTitle {
+  font-size: 18px;
+  font-weight: 500;
+  color: #212529;
+  margin: 0;
+}
+
+.main-content {
+  flex: 1;
+  overflow: auto;
+  padding: 20px;
+  background: #f8f9fa;
+}
+
+.button-container {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+} 

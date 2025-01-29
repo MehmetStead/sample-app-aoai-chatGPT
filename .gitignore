@@ -1,7 +1,72 @@
+# Node modules anywhere
+node_modules/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# React
+frontend/build/
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+# Angular
+frontend-angular/dist
+frontend-angular/tmp
+frontend-angular/out-tsc
+frontend-angular/bazel-out
+frontend-angular/.angular/cache
+frontend-angular/.sass-cache/
+frontend-angular/connect.lock
+frontend-angular/coverage
+frontend-angular/libpeerconnection.log
+frontend-angular/testem.log
+frontend-angular/typings
+
+# IDEs and editors
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history/*
+
+# System files
+.DS_Store
+Thumbs.db
+
 .venv
-frontend/node_modules
 .env
 # static
 .azure/
-__pycache__/
 .ipynb_checkpoints/

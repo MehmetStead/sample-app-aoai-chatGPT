@@ -1,0 +1,14 @@
+<div class="layout-container">
+  <header>
+    <mat-toolbar>
+      <div class="headerContainer">
+        <img [src]="logo" alt="Logo" class="headerIcon" />
+        <span class="headerTitle">{{ title }}</span>
+      </div>
+    </mat-toolbar>
+  </header>
+
+  <main class="main-content">
+    <ng-content></ng-content>
+  </main>
+</div> 

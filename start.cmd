@@ -1,40 +1,32 @@
 @echo off
 
 echo.
-echo Restoring backend python packages
+echo Checking and installing prerequisites...
 echo.
-call python -m pip install -r requirements.txt
-if "%errorlevel%" neq "0" (
-    echo Failed to restore backend python packages
-    exit /B %errorlevel%
+
+REM Check if Node.js is installed
+node --version >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Node.js is not installed. Please install Node.js from https://nodejs.org/
+    exit /b 1
+)
+
+REM Install Angular CLI globally if not already installed
+call npm list -g @angular/cli >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Installing Angular CLI globally...
+    call npm install -g @angular/cli
 )
 
 echo.
-echo Restoring frontend npm packages
+echo Starting backend and frontend servers
 echo.
-cd frontend
-call npm install
-if "%errorlevel%" neq "0" (
-    echo Failed to restore frontend npm packages
-    exit /B %errorlevel%
-)
 
-echo.
-echo Building frontend
-echo.
-call npm run build
-if "%errorlevel%" neq "0" (
-    echo Failed to build frontend
-    exit /B %errorlevel%
-)
+REM Start the Python backend using Quart
+start cmd /k "python -m venv venv && venv\Scripts\activate && pip install -r requirements.txt && python -m quart run --host 127.0.0.1 --port 5001"
 
-echo.    
-echo Starting backend    
-echo.    
-cd ..  
-start http://127.0.0.1:50505
-call python -m uvicorn app:app  --port 50505 --reload
-if "%errorlevel%" neq "0" (    
-    echo Failed to start backend    
-    exit /B %errorlevel%    
-) 
+REM Start the Angular frontend
+start cmd /k "cd frontend-angular && npm install && ng serve"
+
+REM Open the application in browser
+start http://localhost:4200

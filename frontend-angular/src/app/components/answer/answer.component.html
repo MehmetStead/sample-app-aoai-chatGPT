@@ -1,0 +1,29 @@
+<div class="answer-container">
+  <div class="answer-content" [innerHTML]="parsedAnswer"></div>
+
+  <div class="answer-footer">
+    @if (answer?.citations?.length) {
+      <div class="references-section">
+        <button mat-button (click)="toggleReferences()">
+          <mat-icon>{{ isReferencesOpen ? 'expand_more' : 'chevron_right' }}</mat-icon>
+          {{ answer.citations.length }} {{ answer.citations.length === 1 ? 'reference' : 'references' }}
+        </button>
+
+        @if (isReferencesOpen) {
+          <div class="citation-list">
+            @for (citation of answer.citations; track citation.id) {
+              <div class="citation-item" (click)="onCitationClick(citation)">
+                <span class="citation-number">{{ $index + 1 }}</span>
+                <span class="citation-title">{{ citation.title || 'Citation ' + ($index + 1) }}</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <div class="disclaimer">
+      AI-generated content may be incorrect
+    </div>
+  </div>
+</div> 

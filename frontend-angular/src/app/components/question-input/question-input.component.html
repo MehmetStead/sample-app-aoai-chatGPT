@@ -1,0 +1,44 @@
+<div class="question-input-container">
+  <mat-form-field class="question-input-field" appearance="outline">
+    <textarea matInput
+      [formControl]="messageControl"
+      [placeholder]="placeholder"
+      [disabled]="disabled"
+      (keydown.enter)="handleEnterKey($event)"
+      cdkTextareaAutosize
+      cdkAutosizeMinRows="1"
+      cdkAutosizeMaxRows="5">
+    </textarea>
+  </mat-form-field>
+
+  <div class="action-buttons">
+    <button mat-icon-button
+      type="button"
+      class="action-button"
+      (click)="fileInput.click()"
+      [disabled]="disabled">
+      <mat-icon>image</mat-icon>
+    </button>
+
+    <button mat-icon-button
+      type="button"
+      class="action-button"
+      [disabled]="disabled || !messageControl.value?.trim()"
+      (click)="onSend()">
+      <mat-icon>send</mat-icon>
+    </button>
+  </div>
+
+  <input
+    #fileInput
+    type="file"
+    hidden
+    accept="image/*"
+    (change)="onImageUpload($event)">
+
+  @if (base64Image) {
+    <div class="image-preview">
+      <img [src]="base64Image" class="uploaded-image" alt="Uploaded Preview">
+    </div>
+  }
+</div> 

@@ -1,0 +1,97 @@
+:host {
+  display: block;
+}
+
+.question-input-container {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  background: white;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.question-input-field {
+  flex: 1;
+  max-width: calc(100% - 96px);
+}
+
+::ng-deep .question-input-field .mat-mdc-form-field-wrapper {
+  margin: 0;
+  padding: 0;
+}
+
+::ng-deep .question-input-field .mat-mdc-form-field-flex {
+  padding: 0 8px !important;
+}
+
+::ng-deep .question-input-field .mat-mdc-form-field-infix {
+  padding: 8px 0 !important;
+  min-height: unset;
+}
+
+::ng-deep .question-input-field .mdc-text-field--outlined {
+  --mdc-typography-body1-font-size: 14px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.action-button {
+  width: 36px !important;
+  height: 36px !important;
+  padding: 6px !important;
+}
+
+.action-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
+  color: #666;
+}
+
+.action-button:not([disabled]):hover .action-icon {
+  color: #0078d4;
+}
+
+.action-button[disabled] .action-icon {
+  color: #ccc;
+}
+
+.image-preview {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  padding: 8px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-bottom: 8px;
+}
+
+.uploaded-image {
+  max-width: 200px;
+  max-height: 150px;
+  border-radius: 4px;
+}
+
+@media (max-width: 480px) {
+  .question-input-container {
+    padding: 8px;
+  }
+
+  .question-input-field {
+    max-width: calc(100% - 84px);
+  }
+
+  .action-button {
+    width: 32px !important;
+    height: 32px !important;
+    padding: 4px !important;
+  }
+} 

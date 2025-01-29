@@ -1,0 +1,18 @@
+{
+  "/conversation": {
+    "target": "http://localhost:5001",
+    "secure": false
+  },
+  "/.auth": {
+    "target": "http://localhost:5001",
+    "secure": false
+  },
+  "/frontend_settings": {
+    "target": "http://localhost:5001",
+    "secure": false
+  },
+  "/history": {
+    "target": "http://localhost:5001",
+    "secure": false
+  }
+} 
