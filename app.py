@@ -347,9 +347,27 @@ async def send_chat_request(request_body, request_headers):
 
     try:
         azure_openai_client = await init_openai_client()
+        
+        # Log the request details before making the call
+        logging.info("Making Azure OpenAI request:")
+        logging.info(f"Endpoint: {azure_openai_client.azure_endpoint}")
+        logging.info(f"Model: {model_args['model']}")
+        logging.info(f"Request Body: {json.dumps(model_args_clean, indent=2)}")
+        
         raw_response = await azure_openai_client.chat.completions.with_raw_response.create(**model_args)
         response = raw_response.parse()
-        apim_request_id = raw_response.headers.get("apim-request-id") 
+        apim_request_id = raw_response.headers.get("apim-request-id")
+        
+        # Log the response details
+        logging.info("Received Azure OpenAI response:")
+        logging.info(f"APIM Request ID: {apim_request_id}")
+        logging.info(f"Status Code: {raw_response.status_code}")
+        logging.info(f"Headers: {dict(raw_response.headers)}")
+        
+        if not model_args.get("stream", False):
+            # Only log full response for non-streaming requests
+            logging.info(f"Response Body: {json.dumps(response.model_dump(), indent=2)}")
+        
     except Exception as e:
         logging.exception("Exception in send_chat_request")
         raise e
