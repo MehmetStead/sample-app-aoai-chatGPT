@@ -344,13 +344,30 @@ async def send_chat_request(request_body, request_headers):
             
     request_body['messages'] = filtered_messages
     model_args = prepare_model_args(request_body, request_headers)
+    # Get the sanitized version of model_args that has sensitive info removed
+    model_args_clean = copy.deepcopy(model_args)
+    if model_args_clean.get("extra_body"):
+        secret_params = [
+            "key",
+            "connection_string",
+            "embedding_key",
+            "encoded_api_key",
+            "api_key",
+        ]
+        for secret_param in secret_params:
+            if model_args_clean["extra_body"]["data_sources"][0]["parameters"].get(
+                secret_param
+            ):
+                model_args_clean["extra_body"]["data_sources"][0]["parameters"][
+                    secret_param
+                ] = "*****"
 
     try:
         azure_openai_client = await init_openai_client()
         
         # Log the request details before making the call
         logging.info("Making Azure OpenAI request:")
-        logging.info(f"Endpoint: {azure_openai_client.azure_endpoint}")
+        logging.info(f"Endpoint: {azure_openai_client.base_url}")
         logging.info(f"Model: {model_args['model']}")
         logging.info(f"Request Body: {json.dumps(model_args_clean, indent=2)}")
         
