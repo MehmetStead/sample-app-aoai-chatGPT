@@ -4,9 +4,9 @@ from .evaluator import ChatEvaluator
 async def test_evaluation():
     evaluator = ChatEvaluator()
     
-    # Test case
-    user_input = "What is the capital of France?"
-    response = "The capital of France is Paris."
+    # German test case
+    user_input = "Wo wird die Logs von der OnPremise ChatApp gehostet?"
+    response = "Aufgrund datenschutzrechtlicher Unsicherheiten und des Aufwands wurde entschieden, dass die Logs der On-Premise Chat-App vorerst lokal auf dem On-Prem-Server in einer entsprechenden Datei gespeichert werden."
     
     # Test different aspects
     aspects = ["response_quality", "factual_accuracy", "relevance"]
