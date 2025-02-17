@@ -25,7 +25,12 @@ RUN pip install --no-cache-dir -r /usr/src/app/requirements.txt \
   
 COPY . /usr/src/app/  
 COPY --from=frontend /home/node/app/static  /usr/src/app/static/
+
+# Copy env files
+COPY .env /usr/src/app/.env
+COPY .env.development /usr/src/app/.env.development
+
 WORKDIR /usr/src/app  
 EXPOSE 80  
 
-CMD ["gunicorn"  , "-b", "0.0.0.0:80", "app:app"]
+CMD ["gunicorn", "-b", "0.0.0.0:80", "app:app"]
