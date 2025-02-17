@@ -16,12 +16,17 @@ RUN apk add --no-cache --virtual .build-deps \
     libffi-dev \  
     openssl-dev \  
     curl \  
+    rust \
+    cargo \
     && apk add --no-cache \  
     libpq 
   
 COPY requirements.txt /usr/src/app/  
-RUN pip install --no-cache-dir -r /usr/src/app/requirements.txt \  
-    && rm -rf /root/.cache  
+# First upgrade pip and install wheel
+RUN pip install --no-cache-dir --upgrade pip wheel setuptools && \
+    # Then try to install requirements with pre-built wheels
+    pip install --no-cache-dir --prefer-binary -r /usr/src/app/requirements.txt && \
+    rm -rf /root/.cache  
   
 COPY . /usr/src/app/  
 COPY --from=frontend /home/node/app/static  /usr/src/app/static/
