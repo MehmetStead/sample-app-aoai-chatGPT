@@ -38,4 +38,4 @@ COPY .env.development /usr/src/app/.env.development
 WORKDIR /usr/src/app  
 EXPOSE 80  
 
-CMD ["gunicorn", "-b", "0.0.0.0:80", "app:app"]
+CMD ["sh", "-c", "PYTHONUNBUFFERED=1 gunicorn -b 0.0.0.0:80 -w 4 --log-level=info --capture-output --log-file=- app:app"]

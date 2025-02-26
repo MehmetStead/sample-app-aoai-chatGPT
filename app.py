@@ -42,19 +42,40 @@ cosmos_db_ready = asyncio.Event()
 
 
 def create_app():
+    # Configure logging
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.StreamHandler()
+        ],
+        force=True  # This ensures our logging config takes precedence
+    )
+    
+    # Set log levels for specific loggers
+    logging.getLogger('quart.app').setLevel(logging.INFO)
+    logging.getLogger('quart.serving').setLevel(logging.INFO)
+    
+    
+    logger = logging.getLogger(__name__)
+    logger.info("Initializing application...")
+
     app = Quart(__name__)
     app.register_blueprint(bp)
     app.config["TEMPLATES_AUTO_RELOAD"] = True
     
     @app.before_serving
     async def init():
+        logger = logging.getLogger(__name__)
+        logger.info("Starting application initialization")
         try:
-            app.cosmos_conversation_client = await init_cosmosdb_client()
+            await init_openai_client()
+            await init_cosmosdb_client()
             cosmos_db_ready.set()
+            logger.info("Application initialization completed successfully")
         except Exception as e:
-            logging.exception("Failed to initialize CosmosDB client")
-            app.cosmos_conversation_client = None
-            raise e
+            logger.error(f"Error during application initialization: {str(e)}", exc_info=True)
+            raise
     
     return app
 
@@ -113,10 +134,13 @@ MS_DEFENDER_ENABLED = os.environ.get("MS_DEFENDER_ENABLED", "true").lower() == "
 
 # Initialize Azure OpenAI Client
 async def init_openai_client():
+    logger = logging.getLogger(__name__)
+    logger.info("Starting OpenAI client initialization...")
     azure_openai_client = None
     
     try:
         # API version check
+        logger.info(f"Checking API version: {app_settings.azure_openai.preview_api_version}")
         if (
             app_settings.azure_openai.preview_api_version
             < MINIMUM_SUPPORTED_AZURE_OPENAI_PREVIEW_API_VERSION
@@ -139,22 +163,26 @@ async def init_openai_client():
             if app_settings.azure_openai.endpoint
             else f"https://{app_settings.azure_openai.resource}.openai.azure.com/"
         )
+        logger.info(f"Using Azure OpenAI endpoint: {endpoint}")
 
         # Authentication
         aoai_api_key = app_settings.azure_openai.key
         ad_token_provider = None
         if not aoai_api_key:
-            logging.debug("No AZURE_OPENAI_KEY found, using Azure Entra ID auth")
+            logger.info("No API key found, using Azure Entra ID authentication")
             async with DefaultAzureCredential() as credential:
                 ad_token_provider = get_bearer_token_provider(
                     credential,
                     "https://cognitiveservices.azure.com/.default"
                 )
+        else:
+            logger.info("Using API key authentication")
 
         # Deployment
         deployment = app_settings.azure_openai.model
         if not deployment:
             raise ValueError("AZURE_OPENAI_MODEL is required")
+        logger.info(f"Using deployment model: {deployment}")
 
         # Default Headers
         default_headers = {"x-ms-useragent": USER_AGENT}
@@ -166,10 +194,10 @@ async def init_openai_client():
             default_headers=default_headers,
             azure_endpoint=endpoint,
         )
-
+        logger.info("Successfully initialized Azure OpenAI client")
         return azure_openai_client
     except Exception as e:
-        logging.exception("Exception in Azure OpenAI initialization", e)
+        logger.error(f"Failed to initialize Azure OpenAI client: {str(e)}", exc_info=True)
         azure_openai_client = None
         raise e
 
@@ -344,46 +372,39 @@ async def send_chat_request(request_body, request_headers):
             
     request_body['messages'] = filtered_messages
     model_args = prepare_model_args(request_body, request_headers)
-    # Get the sanitized version of model_args that has sensitive info removed
+    
+    # Create a clean version of model_args for logging (remove sensitive info)
     model_args_clean = copy.deepcopy(model_args)
-    if model_args_clean.get("extra_body"):
-        secret_params = [
-            "key",
-            "connection_string",
-            "embedding_key",
-            "encoded_api_key",
-            "api_key",
-        ]
-        for secret_param in secret_params:
-            if model_args_clean["extra_body"]["data_sources"][0]["parameters"].get(
-                secret_param
-            ):
-                model_args_clean["extra_body"]["data_sources"][0]["parameters"][
-                    secret_param
-                ] = "*****"
+    if 'user' in model_args_clean:
+        model_args_clean['user'] = '[REDACTED]'
+
+    # Check if request logging is enabled
+    log_request = os.environ.get('LOG_REQUEST', 'False').lower() == 'true'
 
     try:
         azure_openai_client = await init_openai_client()
         
-        # Log the request details before making the call
-        logging.info("Making Azure OpenAI request:")
-        logging.info(f"Endpoint: {azure_openai_client.base_url}")
-        logging.info(f"Model: {model_args['model']}")
-        logging.info(f"Request Body: {json.dumps(model_args_clean, indent=2)}")
+        # Conditional logging based on LOG_REQUEST
+        if log_request:
+            logging.info("Making Azure OpenAI request:")
+            logging.info(f"Endpoint: {azure_openai_client.base_url}")
+            logging.info(f"Model: {model_args['model']}")
+            logging.info(f"Request Body: {json.dumps(model_args_clean, indent=2)}")
         
         raw_response = await azure_openai_client.chat.completions.with_raw_response.create(**model_args)
         response = raw_response.parse()
         apim_request_id = raw_response.headers.get("apim-request-id")
         
-        # Log the response details
-        logging.info("Received Azure OpenAI response:")
-        logging.info(f"APIM Request ID: {apim_request_id}")
-        logging.info(f"Status Code: {raw_response.status_code}")
-        logging.info(f"Headers: {dict(raw_response.headers)}")
-        
-        if not model_args.get("stream", False):
-            # Only log full response for non-streaming requests
-            logging.info(f"Response Body: {json.dumps(response.model_dump(), indent=2)}")
+        # Conditional logging based on LOG_REQUEST
+        if log_request:
+            logging.info("Received Azure OpenAI response:")
+            logging.info(f"APIM Request ID: {apim_request_id}")
+            logging.info(f"Status Code: {raw_response.status_code}")
+            logging.info(f"Headers: {dict(raw_response.headers)}")
+            
+            if not model_args.get("stream", False):
+                # Only log full response for non-streaming requests
+                logging.info(f"Response Body: {json.dumps(response.model_dump(), indent=2)}")
         
     except Exception as e:
         logging.exception("Exception in send_chat_request")
@@ -441,11 +462,17 @@ async def conversation_internal(request_body, request_headers):
 
 @bp.route("/conversation", methods=["POST"])
 async def conversation():
-    if not request.is_json:
-        return jsonify({"error": "request must be json"}), 415
-    request_json = await request.get_json()
-
-    return await conversation_internal(request_json, request.headers)
+    logger = logging.getLogger(__name__)
+    logger.info("Received conversation request")
+    try:
+        request_body = await request.get_json()
+        request_headers = request.headers
+        response = await conversation_internal(request_body, request_headers)
+        logger.info("Conversation request processed successfully")
+        return response
+    except Exception as e:
+        logger.error(f"Error processing conversation request: {str(e)}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
 
 
 @bp.route("/frontend_settings", methods=["GET"])
